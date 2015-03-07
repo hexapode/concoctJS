@@ -9,7 +9,7 @@ function Concoct(canvas) {
   var CAN_STROKE = true;
 
   function size(w, h) {
-    console.log('size', arguments);
+   
     canvas.width = w;
     canvas.height = h;
     canvas.style.width = w + 'px';
@@ -19,7 +19,6 @@ function Concoct(canvas) {
   }
 
   function background(r) {
-    console.log('background', arguments);
 
     var g = r;
     var b = r;
@@ -34,17 +33,17 @@ function Concoct(canvas) {
   }
 
   function noFill() {
-    console.log('noFill', arguments);
+   
     CAN_FILL = false;
   }
 
   function noStroke() {
-    console.log('noStroke', arguments);
+ 
     CAN_STROKE = false;
   }
 
   function point(x, y) {
-    console.log('point', arguments);
+  
     if (CAN_FILL) {
       ctx.fillRect(x, y, 1, 1);
     }
@@ -56,7 +55,7 @@ function Concoct(canvas) {
   }
 
   function line(x,y,x2,y2) {
-    console.log('line', arguments);
+   
     ctx.beginPath();
     ctx.moveTo(x,y);
     ctx.lineTo(x2, y2);
@@ -69,7 +68,7 @@ function Concoct(canvas) {
   }
 
   function rect(x,y,w,h) {
-    console.log('rect', arguments);
+   
     if (CAN_STROKE) {
       ctx.strokeRect(x,y,w,h);
     }
@@ -80,7 +79,7 @@ function Concoct(canvas) {
 
   function stroke(r) {
     CAN_STROKE = true;
-    console.log('stroke', arguments);
+   
     var g = r;
     var b = r;
 
@@ -90,12 +89,12 @@ function Concoct(canvas) {
     }
 
     ctx.strokeStyle = 'rgb(' + r +',' + g + ',' + b + ')';
-    console.log(ctx.strokeStyle);
+  
   }
 
   function fill(r) {
     CAN_FILL = true;
-    console.log('fill', arguments);
+    
     var g = r;
     var b = r;
 
@@ -105,18 +104,28 @@ function Concoct(canvas) {
     }
 
     ctx.fillStyle = 'rgb(' + r +',' + g + ',' + b + ')';
-    console.log(ctx.fillStyle);
+    
   }
 
   function width() {
-     console.log('width', arguments);
+     
     return canvas.width;
   }
 
   function height() {
-     console.log('height', arguments);
+  
     return canvas.height;
   }
+
+  var LOOP = true;
+  function noLoop() {
+    LOOP = false;
+  }
+ 
+  function loop() {
+    LOOP = true;
+  }
+
 
   var source = canvas.innerHTML;
 
@@ -140,7 +149,10 @@ function Concoct(canvas) {
           word = 'function ';
         }
         if (word === 'int') {
-          word = ' ';
+          word = 'var ';
+        }
+        if (word === 'float') {
+          word = 'var ';
         }
         source += word + src[i];
         word = '';
@@ -151,6 +163,37 @@ function Concoct(canvas) {
     }
     return source;
   }(source);
+
+  var loopFn = null;
+  function __run() {
+    window.requestAnimationFrame(__run);
+    if (LOOP) {
+      loopFn();
+    }
+  }
+
+  function ___SetLoop(loop) {
+    loopFn = loop;
+    loop();
+    __run();
+  }
+
+  function redraw() {
+    loopFn();
+  }
+
+  var ON_MOUSE_PRESSED = [];
+  function ___SetMousePressed(fn) {
+    ON_MOUSE_PRESSED.push(fn);
+  }
+
+
+
+  canvas.addEventListener('mousedown', function(e) {
+    for (var i = 0; i < ON_MOUSE_PRESSED.length; ++i) {
+      ON_MOUSE_PRESSED[i](e.clientX, e.clientY);
+    }
+  });
 
   console.log(source);
   var fn = new Function(
@@ -165,7 +208,12 @@ function Concoct(canvas) {
     'rect',
     'noStroke',
     'fill',
-    source += 'var setup; var draw;if(setup) {setup()} if (draw) {window.setInterval(draw, 16)}');
+    'noLoop',
+    'loop',
+    'redraw',
+    '___SetLoop',
+    '___SetMousePressed',
+    source += 'var setup; var draw; var mousePressed; if(setup) {setup()} if (mousePressed) {___SetMousePressed(mousePressed)} if (draw) {___SetLoop(draw)}');
 
   fn(
     width,
@@ -178,6 +226,11 @@ function Concoct(canvas) {
     line,
     rect,
     noStroke,
-    fill
+    fill,
+    noLoop,
+    loop,
+    redraw,
+    ___SetLoop,
+    ___SetMousePressed
   );
 }
