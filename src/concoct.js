@@ -77,7 +77,7 @@ function Concoct(canvas) {
     }
   }
 
-  function elipse(x,y,w,h) {
+  function ellipse(x,y,w,h) {
     ctx.beginPath();
     ctx.ellipse(x,y,w,h, 0, 0, Math.PI * 2, true);
     if (CAN_STROKE) {
