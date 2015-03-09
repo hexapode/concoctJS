@@ -15,7 +15,7 @@ function PCompiler (src) {
     }
 
     for (var i = 0; i < src.length; ++i) {
-      if (TOKENS.indexOf(src[i]) !== -1) {
+      if (TOKENS.indexOf(src[i]) !== -1 || src.charCodeAt(i) < 33) {
 
 
         if (word === 'width') {
@@ -32,10 +32,10 @@ function PCompiler (src) {
           word = 'mouseY()';
         }
 
-
         if (TYPES.indexOf(word) !== -1) {
           var next = getNextWordToken(src, i + 1);
-          console.log(next);
+        //  console.log(word, next);
+
           if (next === '(') {
             word = 'function ';
           }
@@ -45,6 +45,7 @@ function PCompiler (src) {
           else {
             word = 'var ';
           }
+
         }
         source += word + src[i];
         word = '';

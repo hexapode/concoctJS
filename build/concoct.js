@@ -169,7 +169,13 @@ function PGraphics(canvas) {
     return HEIGHT;
   };
 
+  pg.noSmooth = function() {
 
+  };
+
+  pg.translate = function() {
+
+  };
 
   pg.createGraphics = function(w, h) {
     var canvas = document.createElement('canvas');
@@ -214,7 +220,7 @@ function PGraphics(canvas) {
     }
 
     for (var i = 0; i < src.length; ++i) {
-      if (TOKENS.indexOf(src[i]) !== -1) {
+      if (TOKENS.indexOf(src[i]) !== -1 || src.charCodeAt(i) < 33) {
 
 
         if (word === 'width') {
@@ -231,10 +237,10 @@ function PGraphics(canvas) {
           word = 'mouseY()';
         }
 
-
         if (TYPES.indexOf(word) !== -1) {
           var next = getNextWordToken(src, i + 1);
-          console.log(next);
+          console.log(word, next);
+
           if (next === '(') {
             word = 'function ';
           }
@@ -244,6 +250,7 @@ function PGraphics(canvas) {
           else {
             word = 'var ';
           }
+
         }
         source += word + src[i];
         word = '';
@@ -355,6 +362,8 @@ function Concoct(canvas) {
     'beginDraw',
     'endDraw',
     'image',
+    'noSmooth',
+    'translate',
     '___SetLoop',
     '___SetMousePressed',
     'noLoop',
@@ -381,6 +390,8 @@ function Concoct(canvas) {
     mainPG.beginDraw,
     mainPG.endDraw,
     mainPG.image,
+    mainPG.noSmooth,
+    mainPG.translate,
     ___SetLoop,
     ___SetMousePressed,
     noLoop,

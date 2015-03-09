@@ -169,7 +169,13 @@ function PGraphics(canvas) {
     return HEIGHT;
   };
 
+  pg.noSmooth = function() {
 
+  };
+
+  pg.translate = function() {
+
+  };
 
   pg.createGraphics = function(w, h) {
     var canvas = document.createElement('canvas');
