@@ -90,13 +90,13 @@ function Concoct(canvas) {
 
   function stroke(r) {
     CAN_STROKE = true;
-   
+    r = r | 0;
     var g = r;
     var b = r;
 
     if (arguments.length == 3) {
-      g = arguments[1];
-      b = arguments[2];
+      g = arguments[1] | 0;
+      b = arguments[2] | 0;
     }
 
     ctx.strokeStyle = 'rgb(' + r +',' + g + ',' + b + ')';
@@ -105,13 +105,13 @@ function Concoct(canvas) {
 
   function fill(r) {
     CAN_FILL = true;
-    
+    r = r | 0;
     var g = r;
     var b = r;
 
     if (arguments.length == 3) {
-      g = arguments[1];
-      b = arguments[2];
+      g = arguments[1] | 0;
+      b = arguments[2] | 0;
     }
 
     ctx.fillStyle = 'rgb(' + r +',' + g + ',' + b + ')';
