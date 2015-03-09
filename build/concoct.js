@@ -77,6 +77,17 @@ function Concoct(canvas) {
     }
   }
 
+  function elipse(x,y,w,h) {
+    ctx.beginPath();
+    ctx.ellipse(x,y,w,h, 0, 0, Math.PI * 2, true);
+    if (CAN_STROKE) {
+      ctx.fill();
+    }
+    if (CAN_FILL) {
+      ctx.stroke();
+    }
+  }
+
   function stroke(r) {
     CAN_STROKE = true;
    
@@ -127,6 +138,7 @@ function Concoct(canvas) {
   }
 
 
+
   var source = canvas.innerHTML;
 
   // [\[\]\ \(\,\t\n\;\)\*\+\-\/\>\<\=\\]
@@ -137,22 +149,42 @@ function Concoct(canvas) {
     var TOKENS = [ ',' , ';', ' ', '\t', '+', '!', '(', ')', '#', '\\', '/', '%', '^', '&', '*', '=', '[', ']', '\'', '\"', '{', '}'];
     var source = '';
     var word = '';
+    var TYPES = ['void', 'float', 'int'];
+    var TOKENS_SPACE = [ ' ' , '\n', '\r', '\t'];
+    
+    function getNextWordToken(src, index) {
+      for (var i = index; i < src.length; ++i) {
+        if (TOKENS.indexOf(src[i]) !== -1 && TOKENS_SPACE.indexOf(src[i]) === -1) {
+          return src[i];
+        }
+      }
+      return ' ';
+    }
+
     for (var i = 0; i < src.length; ++i) {
       if (TOKENS.indexOf(src[i]) !== -1) {
+
+
         if (word === 'width') {
           word = 'width()';
         }
         if (word === 'height') {
           word = 'height()';
         }
-        if (word === 'void') {
-          word = 'function ';
-        }
-        if (word === 'int') {
-          word = 'var ';
-        }
-        if (word === 'float') {
-          word = 'var ';
+
+
+        if (TYPES.indexOf(word) !== -1) {
+          var next = getNextWordToken(src, i + 1);
+          console.log(next);
+          if (next === '(') {
+            word = 'function ';
+          }
+          else if (next === ')' || next === ',') {
+            word = '';
+          }
+          else {
+            word = 'var ';
+          }
         }
         source += word + src[i];
         word = '';
@@ -210,6 +242,7 @@ function Concoct(canvas) {
     'fill',
     'noLoop',
     'loop',
+    'ellipse',
     'redraw',
     '___SetLoop',
     '___SetMousePressed',
@@ -229,6 +262,7 @@ function Concoct(canvas) {
     fill,
     noLoop,
     loop,
+    ellipse,
     redraw,
     ___SetLoop,
     ___SetMousePressed
