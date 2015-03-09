@@ -2,23 +2,27 @@
  * Concoct!
  */
 
-function Concoct(canvas) {
+function PGraphics(canvas) {
   var ctx = canvas.getContext('2d');
 
   var CAN_FILL = true;
   var CAN_STROKE = true;
 
-  function size(w, h) {
+  var HEIGHT = canvas.height;
+  var WIDTH = canvas.width;
+
+  var pg = {};
+  pg.size = function (w, h) {
    
     canvas.width = w;
     canvas.height = h;
     canvas.style.width = w + 'px';
     canvas.style.height = h + 'px';
-    width = w;
-    height = h;
-  }
+    WIDTH = w;
+    HEIGHT = h;
+  };
 
-  function background(r) {
+  pg.background = function (r) {
 
     var g = r;
     var b = r;
@@ -29,20 +33,20 @@ function Concoct(canvas) {
     }
 
     ctx.fillStyle = 'rgb(' + r +',' + g + ',' + b + ')';
-    ctx.fillRect(0,0, canvas.width, canvas.height);
-  }
+    ctx.fillRect(0,0, WIDTH, HEIGHT);
+  };
 
-  function noFill() {
+  pg.noFill = function () {
    
     CAN_FILL = false;
-  }
+  };
 
-  function noStroke() {
+  pg.noStroke = function () {
  
     CAN_STROKE = false;
-  }
+  };
 
-  function point(x, y) {
+  pg.point = function (x, y) {
   
     if (CAN_FILL) {
       ctx.fillRect(x, y, 1, 1);
@@ -52,9 +56,9 @@ function Concoct(canvas) {
     }
     
 
-  }
+  };
 
-  function line(x,y,x2,y2) {
+  pg.line = function(x,y,x2,y2) {
    
     ctx.beginPath();
     ctx.moveTo(x,y);
@@ -65,9 +69,9 @@ function Concoct(canvas) {
     if (CAN_FILL) {
       ctx.fill();
     }
-  }
+  };
 
-  function rect(x,y,w,h) {
+  pg.rect = function(x,y,w,h) {
    
     if (CAN_STROKE) {
       ctx.strokeRect(x,y,w,h);
@@ -75,81 +79,129 @@ function Concoct(canvas) {
     if (CAN_FILL) {
       ctx.fillRect(x,y,w,h);
     }
-  }
+  };
 
-  function ellipse(x,y,w,h) {
+  pg.ellipse = function(x,y,w,h) {
+
     ctx.beginPath();
-    ctx.ellipse(x,y,w,h, 0, 0, Math.PI * 2, true);
+    ctx.ellipse(x,y,w/2,h/2, 0, 0, Math.PI * 2);
     if (CAN_STROKE) {
-      ctx.fill();
-    }
-    if (CAN_FILL) {
       ctx.stroke();
     }
-  }
+    if (CAN_FILL) {
+      ctx.fill();
+    }
+  };
 
-  function stroke(r) {
+  pg.stroke = function(r) {
     CAN_STROKE = true;
     r = r | 0;
+    
     var g = r;
     var b = r;
+    var a = 1.0;
 
+    if (r > 255) {
+      b = r & 0x0000ff;
+      g = r & 0x00ff00;
+      r = r & 0xff0000;
+    }
+
+    if (arguments.length == 2) {
+      a = 1/ 255 * arguments[1];
+    }
     if (arguments.length == 3) {
       g = arguments[1] | 0;
       b = arguments[2] | 0;
     }
+    if (arguments.length == 4) {
+      g = arguments[1] | 0;
+      b = arguments[2] | 0;
+      a = 1 / 255 * arguments[3];
+    }
+    var color = 'rgba(' + r +',' + g + ',' + b + ', ' + a + ')';
 
-    ctx.strokeStyle = 'rgb(' + r +',' + g + ',' + b + ')';
+    ctx.strokeStyle = color;
   
-  }
+  };
+ 
 
-  function fill(r) {
+
+
+  pg.fill = function(r) {
     CAN_FILL = true;
     r = r | 0;
+    
     var g = r;
     var b = r;
+    var a = 1.0;
 
+    if (r > 255) {
+      b = r & 0x0000ff;
+      g = r & 0x00ff00;
+      r = r & 0xff0000;
+    }
+
+    if (arguments.length == 2) {
+      a = 1/ 255 * arguments[1];
+    }
     if (arguments.length == 3) {
       g = arguments[1] | 0;
       b = arguments[2] | 0;
     }
-
-    ctx.fillStyle = 'rgb(' + r +',' + g + ',' + b + ')';
-    
-  }
-
-  function width() {
-     
-    return canvas.width;
-  }
-
-  function height() {
-  
-    return canvas.height;
-  }
-
-  var LOOP = true;
-  function noLoop() {
-    LOOP = false;
-  }
+    if (arguments.length == 4) {
+      g = arguments[1] | 0;
+      b = arguments[2] | 0;
+      a = 1 / 255 * arguments[3];
+    }
+    var color = 'rgba(' + r +',' + g + ',' + b + ', ' + a + ')';
+    ctx.fillStyle = color;
  
-  function loop() {
-    LOOP = true;
-  }
+  };
+
+  pg.width = function() {
+     
+    return WIDTH;
+  };
+
+  pg.height = function() {
+  
+    return HEIGHT;
+  };
 
 
 
-  var source = canvas.innerHTML;
+  pg.createGraphics = function(w, h) {
+    var canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    //document.body.appendChild(canvas);
+    var pg = PGraphics(canvas);
+    return pg;
+  };
 
-  // [\[\]\ \(\,\t\n\;\)\*\+\-\/\>\<\=\\]
-  source = source.replace(/&lt;/g, '<');
-  source = source.replace(/&gt;/g, '>');
+  pg.image= function(pg, x, y) {
+    ctx.drawImage(pg.getCanvas(), x, y);
+  };
 
-  source = function (src) {
-    var TOKENS = [ ',' , ';', ' ', '\t', '+', '!', '(', ')', '#', '\\', '/', '%', '^', '&', '*', '=', '[', ']', '\'', '\"', '{', '}'];
+  pg.getCanvas = function() {
+    return canvas;
+  };
+
+  pg.beginDraw = function() {
+
+  };
+
+  pg.endDraw = function() {
+
+  };
+
+  return pg;
+};function PCompiler (src) {
+    var TOKENS = [ ',' , ';', ' ', '\t', '+', '!', '(', ')', '#', '\\', '/', '-', '%', '^', '&', '*', '=', '[', ']', '\'', '\"', '{', '}'];
     var source = '';
     var word = '';
-    var TYPES = ['void', 'float', 'int'];
+    var TYPES = ['void', 'float', 'int', 'PGraphics'];
     var TOKENS_SPACE = [ ' ' , '\n', '\r', '\t'];
     
     function getNextWordToken(src, index) {
@@ -170,6 +222,13 @@ function Concoct(canvas) {
         }
         if (word === 'height') {
           word = 'height()';
+        }
+
+        if (word === 'mouseX') {
+          word = 'mouseX()';
+        }
+        if (word === 'mouseY') {
+          word = 'mouseY()';
         }
 
 
@@ -193,8 +252,38 @@ function Concoct(canvas) {
         word += src[i];
       }
     }
+    console.log(source);
     return source;
-  }(source);
+  };
+
+function Concoct(canvas) {
+ 
+
+  var mainPG = PGraphics(canvas);
+  
+  /**
+   * COMPILER
+   */
+  var source = canvas.innerHTML;
+
+  // [\[\]\ \(\,\t\n\;\)\*\+\-\/\>\<\=\\]
+  source = source.replace(/&lt;/g, '<');
+  source = source.replace(/&gt;/g, '>');
+
+  source = PCompiler(source);
+  
+
+  /**
+   * Loop logic
+   */
+  var LOOP = true;
+  function noLoop() {
+    LOOP = false;
+  }
+ 
+  function loop() {
+    LOOP = true;
+  }
 
   var loopFn = null;
   function __run() {
@@ -214,20 +303,41 @@ function Concoct(canvas) {
     loopFn();
   }
 
+
+  var MOUSE = {
+    x : 0,
+    y : 0
+  };
+
+  function mouseX() {
+    return MOUSE.x;
+  }
+
+  function mouseY() {
+    return MOUSE.y;
+  }
+
   var ON_MOUSE_PRESSED = [];
   function ___SetMousePressed(fn) {
     ON_MOUSE_PRESSED.push(fn);
   }
 
+  canvas.addEventListener('mousemove', function(e) {
+    MOUSE.x = e.clientX;
+    MOUSE.y = e.clientY;
+  });
 
 
   canvas.addEventListener('mousedown', function(e) {
     for (var i = 0; i < ON_MOUSE_PRESSED.length; ++i) {
       ON_MOUSE_PRESSED[i](e.clientX, e.clientY);
     }
+    MOUSE.x = e.clientX;
+    MOUSE.y = e.clientY;
   });
 
-  console.log(source);
+
+
   var fn = new Function(
     'width',
     'height',
@@ -240,32 +350,44 @@ function Concoct(canvas) {
     'rect',
     'noStroke',
     'fill',
-    'noLoop',
-    'loop',
     'ellipse',
-    'redraw',
+    'createGraphics',
+    'beginDraw',
+    'endDraw',
+    'image',
     '___SetLoop',
     '___SetMousePressed',
+    'noLoop',
+    'loop',
+    'redraw',
+    'mouseX',
+    'mouseY',
     source += 'var setup; var draw; var mousePressed; if(setup) {setup()} if (mousePressed) {___SetMousePressed(mousePressed)} if (draw) {___SetLoop(draw)}');
 
   fn(
-    width,
-    height,
-    size,
-    background,
-    noFill,
-    stroke,
-    point,
-    line,
-    rect,
-    noStroke,
-    fill,
+    mainPG.width,
+    mainPG.height,
+    mainPG.size,
+    mainPG.background,
+    mainPG.noFill,
+    mainPG.stroke,
+    mainPG.point,
+    mainPG.line,
+    mainPG.rect,
+    mainPG.noStroke,
+    mainPG.fill,
+    mainPG.ellipse,
+    mainPG.createGraphics,
+    mainPG.beginDraw,
+    mainPG.endDraw,
+    mainPG.image,
+    ___SetLoop,
+    ___SetMousePressed,
     noLoop,
     loop,
-    ellipse,
     redraw,
-    ___SetLoop,
-    ___SetMousePressed
+    mouseX,
+    mouseY
   );
 };/*
   Main

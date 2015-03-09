@@ -14,6 +14,8 @@ module.exports = function(grunt) {
       },
       dist: {
         src: [
+          './src/pgraphics.js',
+          './src/pcompiler.js',
           './src/concoct.js',
           './src/main.js'
         ],
