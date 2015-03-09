@@ -81,6 +81,28 @@ function PGraphics(canvas) {
     }
   };
 
+  pg.triangle = function (x1, y1, x2, y2, x3, y3) {
+    ctx.beginPath();
+    ctx.moveTo(x1,y1);
+    ctx.lineTo(x2,y2);
+    ctx.lineTo(x3,y3);
+    ctx.lineTo(x1,y1);
+    if (CAN_STROKE) {
+      ctx.stroke();
+    }
+    if (CAN_FILL) {
+      ctx.fill();
+    }
+  };
+
+  pg.arc = function() {
+
+  };
+
+  pg.quad = function() {
+
+  };
+
   pg.ellipse = function(x,y,w,h) {
 
     ctx.beginPath();
@@ -170,11 +192,11 @@ function PGraphics(canvas) {
   };
 
   pg.noSmooth = function() {
-
+    ctx.imageSmoothingEnabled = false;
   };
 
-  pg.translate = function() {
-
+  pg.translate = function(x, y) {
+    ctx.translate(x, y);
   };
 
   pg.createGraphics = function(w, h) {
@@ -202,6 +224,13 @@ function PGraphics(canvas) {
 
   };
 
+  pg._save = function() {
+    ctx.save();
+  };
+
+  pg._restore = function() {
+    ctx.restore();
+  };
   return pg;
 };function PCompiler (src) {
     var TOKENS = [ ',' , ';', ' ', '\t', '+', '!', '(', ')', '#', '\\', '/', '-', '%', '^', '&', '*', '=', '[', ']', '\'', '\"', '{', '}'];
@@ -239,7 +268,7 @@ function PGraphics(canvas) {
 
         if (TYPES.indexOf(word) !== -1) {
           var next = getNextWordToken(src, i + 1);
-          console.log(word, next);
+        //  console.log(word, next);
 
           if (next === '(') {
             word = 'function ';
@@ -296,7 +325,9 @@ function Concoct(canvas) {
   function __run() {
     window.requestAnimationFrame(__run);
     if (LOOP) {
+      mainPG._save();
       loopFn();
+      mainPG._restore();
     }
   }
 
@@ -364,6 +395,12 @@ function Concoct(canvas) {
     'image',
     'noSmooth',
     'translate',
+    'triangle',
+    'arc',
+    'quad',
+
+
+
     '___SetLoop',
     '___SetMousePressed',
     'noLoop',
@@ -371,7 +408,7 @@ function Concoct(canvas) {
     'redraw',
     'mouseX',
     'mouseY',
-    source += 'var setup; var draw; var mousePressed; if(setup) {setup()} if (mousePressed) {___SetMousePressed(mousePressed)} if (draw) {___SetLoop(draw)}');
+    source += 'var PI = Math.PI; var TWO_PI = Math.PI * 2; var setup; var draw; var mousePressed; if(setup) {setup()} if (mousePressed) {___SetMousePressed(mousePressed)} if (draw) {___SetLoop(draw)}');
 
   fn(
     mainPG.width,
@@ -392,6 +429,12 @@ function Concoct(canvas) {
     mainPG.image,
     mainPG.noSmooth,
     mainPG.translate,
+    mainPG.triangle,
+    mainPG.arc,
+    mainPG.quad,
+
+
+
     ___SetLoop,
     ___SetMousePressed,
     noLoop,

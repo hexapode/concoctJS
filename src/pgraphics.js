@@ -81,6 +81,28 @@ function PGraphics(canvas) {
     }
   };
 
+  pg.triangle = function (x1, y1, x2, y2, x3, y3) {
+    ctx.beginPath();
+    ctx.moveTo(x1,y1);
+    ctx.lineTo(x2,y2);
+    ctx.lineTo(x3,y3);
+    ctx.lineTo(x1,y1);
+    if (CAN_STROKE) {
+      ctx.stroke();
+    }
+    if (CAN_FILL) {
+      ctx.fill();
+    }
+  };
+
+  pg.arc = function() {
+
+  };
+
+  pg.quad = function() {
+
+  };
+
   pg.ellipse = function(x,y,w,h) {
 
     ctx.beginPath();
@@ -170,11 +192,11 @@ function PGraphics(canvas) {
   };
 
   pg.noSmooth = function() {
-
+    ctx.imageSmoothingEnabled = false;
   };
 
-  pg.translate = function() {
-
+  pg.translate = function(x, y) {
+    ctx.translate(x, y);
   };
 
   pg.createGraphics = function(w, h) {
@@ -202,5 +224,12 @@ function PGraphics(canvas) {
 
   };
 
+  pg._save = function() {
+    ctx.save();
+  };
+
+  pg._restore = function() {
+    ctx.restore();
+  };
   return pg;
 }

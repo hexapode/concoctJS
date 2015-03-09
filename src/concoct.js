@@ -33,7 +33,9 @@ function Concoct(canvas) {
   function __run() {
     window.requestAnimationFrame(__run);
     if (LOOP) {
+      mainPG._save();
       loopFn();
+      mainPG._restore();
     }
   }
 
@@ -101,6 +103,12 @@ function Concoct(canvas) {
     'image',
     'noSmooth',
     'translate',
+    'triangle',
+    'arc',
+    'quad',
+
+
+
     '___SetLoop',
     '___SetMousePressed',
     'noLoop',
@@ -108,7 +116,7 @@ function Concoct(canvas) {
     'redraw',
     'mouseX',
     'mouseY',
-    source += 'var setup; var draw; var mousePressed; if(setup) {setup()} if (mousePressed) {___SetMousePressed(mousePressed)} if (draw) {___SetLoop(draw)}');
+    source += 'var PI = Math.PI; var TWO_PI = Math.PI * 2; var setup; var draw; var mousePressed; if(setup) {setup()} if (mousePressed) {___SetMousePressed(mousePressed)} if (draw) {___SetLoop(draw)}');
 
   fn(
     mainPG.width,
@@ -129,6 +137,12 @@ function Concoct(canvas) {
     mainPG.image,
     mainPG.noSmooth,
     mainPG.translate,
+    mainPG.triangle,
+    mainPG.arc,
+    mainPG.quad,
+
+
+
     ___SetLoop,
     ___SetMousePressed,
     noLoop,
