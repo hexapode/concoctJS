@@ -95,12 +95,31 @@ function PGraphics(canvas) {
     }
   };
 
-  pg.arc = function() {
-
+  pg.arc = function(x,y,w,h,start,stop) {
+    console.log('arc', arguments);
+    ctx.beginPath();
+    ctx.ellipse(x,y,w/2,h/2, 0, start, stop);
+    if (CAN_STROKE) {
+      ctx.stroke();
+    }
+    if (CAN_FILL) {
+      ctx.fill();
+    }
   };
 
-  pg.quad = function() {
-
+  pg.quad = function(x1, y1, x2, y2, x3, y3, x4, y4) {
+    ctx.beginPath();
+    ctx.moveTo(x1,y1);
+    ctx.lineTo(x2,y2);
+    ctx.lineTo(x3,y3);
+    ctx.lineTo(x4,y4);
+    ctx.lineTo(x1,y1);
+    if (CAN_STROKE) {
+      ctx.stroke();
+    }
+    if (CAN_FILL) {
+      ctx.fill();
+    }
   };
 
   pg.ellipse = function(x,y,w,h) {

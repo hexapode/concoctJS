@@ -95,12 +95,31 @@ function PGraphics(canvas) {
     }
   };
 
-  pg.arc = function() {
-
+  pg.arc = function(x,y,w,h,start,stop) {
+    console.log('arc', arguments);
+    ctx.beginPath();
+    ctx.ellipse(x,y,w/2,h/2, 0, start, stop);
+    if (CAN_STROKE) {
+      ctx.stroke();
+    }
+    if (CAN_FILL) {
+      ctx.fill();
+    }
   };
 
-  pg.quad = function() {
-
+  pg.quad = function(x1, y1, x2, y2, x3, y3, x4, y4) {
+    ctx.beginPath();
+    ctx.moveTo(x1,y1);
+    ctx.lineTo(x2,y2);
+    ctx.lineTo(x3,y3);
+    ctx.lineTo(x4,y4);
+    ctx.lineTo(x1,y1);
+    if (CAN_STROKE) {
+      ctx.stroke();
+    }
+    if (CAN_FILL) {
+      ctx.fill();
+    }
   };
 
   pg.ellipse = function(x,y,w,h) {
@@ -232,13 +251,31 @@ function PGraphics(canvas) {
     ctx.restore();
   };
   return pg;
-};function PCompiler (src) {
+};
+
+function PCompiler (src) {
     var TOKENS = [ ',' , ';', ' ', '\t', '+', '!', '(', ')', '#', '\\', '/', '-', '%', '^', '&', '*', '=', '[', ']', '\'', '\"', '{', '}'];
     var source = '';
     var word = '';
     var TYPES = ['void', 'float', 'int', 'PGraphics'];
     var TOKENS_SPACE = [ ' ' , '\n', '\r', '\t'];
-    
+
+
+    while (src.indexOf('[]') !== -1) {
+      var i = src.indexOf('[]');
+      var token = getNextWordToken(src, i + 2);
+      console.log(token);
+      if (token === '=') {
+        src = replaceAt(src, src.indexOf('{', i + 2), '[');
+        src = replaceAt(src, src.indexOf('}', i + 2), ']');
+      }
+      src = src.replace('[]', '');
+    }
+
+
+    function replaceAt(txt, index, character) {
+      return txt.substr(0, index) + character + txt.substr(index+character.length); 
+    }
     function getNextWordToken(src, index) {
       for (var i = index; i < src.length; ++i) {
         if (TOKENS.indexOf(src[i]) !== -1 && TOKENS_SPACE.indexOf(src[i]) === -1) {
@@ -279,7 +316,6 @@ function PGraphics(canvas) {
           else {
             word = 'var ';
           }
-
         }
         source += word + src[i];
         word = '';
@@ -288,7 +324,10 @@ function PGraphics(canvas) {
         word += src[i];
       }
     }
+
+  
     console.log(source);
+
     return source;
   };
 
@@ -308,6 +347,21 @@ function Concoct(canvas) {
 
   source = PCompiler(source);
   
+
+
+  function map(value, start1, stop1, start2, stop2) {
+    var d1 = stop1 - start1;
+    var d2 = stop2 - start2;
+
+    var d = value - start1;
+
+
+    return d2 * d1 / d;
+  }
+
+  function radians(angle) {
+    return Math.PI / 180 * angle;
+  }
 
   /**
    * Loop logic
@@ -374,6 +428,8 @@ function Concoct(canvas) {
     MOUSE.y = e.clientY;
   });
 
+  // constants
+  source = 'var PI = Math.PI; var TWO_PI = Math.PI * 2;' + source;
 
 
   var fn = new Function(
@@ -399,7 +455,8 @@ function Concoct(canvas) {
     'arc',
     'quad',
 
-
+    'map',
+    'radians',
 
     '___SetLoop',
     '___SetMousePressed',
@@ -408,7 +465,7 @@ function Concoct(canvas) {
     'redraw',
     'mouseX',
     'mouseY',
-    source += 'var PI = Math.PI; var TWO_PI = Math.PI * 2; var setup; var draw; var mousePressed; if(setup) {setup()} if (mousePressed) {___SetMousePressed(mousePressed)} if (draw) {___SetLoop(draw)}');
+    source += 'var setup; var draw; var mousePressed; if(setup) {setup()} if (mousePressed) {___SetMousePressed(mousePressed)} if (draw) {___SetLoop(draw)}');
 
   fn(
     mainPG.width,
@@ -433,7 +490,8 @@ function Concoct(canvas) {
     mainPG.arc,
     mainPG.quad,
 
-
+    map,
+    radians,
 
     ___SetLoop,
     ___SetMousePressed,

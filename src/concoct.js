@@ -17,6 +17,21 @@ function Concoct(canvas) {
   source = PCompiler(source);
   
 
+
+  function map(value, start1, stop1, start2, stop2) {
+    var d1 = stop1 - start1;
+    var d2 = stop2 - start2;
+
+    var d = value - start1;
+
+
+    return d2 * d1 / d;
+  }
+
+  function radians(angle) {
+    return Math.PI / 180 * angle;
+  }
+
   /**
    * Loop logic
    */
@@ -82,6 +97,8 @@ function Concoct(canvas) {
     MOUSE.y = e.clientY;
   });
 
+  // constants
+  source = 'var PI = Math.PI; var TWO_PI = Math.PI * 2;' + source;
 
 
   var fn = new Function(
@@ -107,7 +124,8 @@ function Concoct(canvas) {
     'arc',
     'quad',
 
-
+    'map',
+    'radians',
 
     '___SetLoop',
     '___SetMousePressed',
@@ -116,7 +134,7 @@ function Concoct(canvas) {
     'redraw',
     'mouseX',
     'mouseY',
-    source += 'var PI = Math.PI; var TWO_PI = Math.PI * 2; var setup; var draw; var mousePressed; if(setup) {setup()} if (mousePressed) {___SetMousePressed(mousePressed)} if (draw) {___SetLoop(draw)}');
+    source += 'var setup; var draw; var mousePressed; if(setup) {setup()} if (mousePressed) {___SetMousePressed(mousePressed)} if (draw) {___SetLoop(draw)}');
 
   fn(
     mainPG.width,
@@ -141,7 +159,8 @@ function Concoct(canvas) {
     mainPG.arc,
     mainPG.quad,
 
-
+    map,
+    radians,
 
     ___SetLoop,
     ___SetMousePressed,

@@ -1,10 +1,28 @@
+
+
 function PCompiler (src) {
     var TOKENS = [ ',' , ';', ' ', '\t', '+', '!', '(', ')', '#', '\\', '/', '-', '%', '^', '&', '*', '=', '[', ']', '\'', '\"', '{', '}'];
     var source = '';
     var word = '';
     var TYPES = ['void', 'float', 'int', 'PGraphics'];
     var TOKENS_SPACE = [ ' ' , '\n', '\r', '\t'];
-    
+
+
+    while (src.indexOf('[]') !== -1) {
+      var i = src.indexOf('[]');
+      var token = getNextWordToken(src, i + 2);
+      console.log(token);
+      if (token === '=') {
+        src = replaceAt(src, src.indexOf('{', i + 2), '[');
+        src = replaceAt(src, src.indexOf('}', i + 2), ']');
+      }
+      src = src.replace('[]', '');
+    }
+
+
+    function replaceAt(txt, index, character) {
+      return txt.substr(0, index) + character + txt.substr(index+character.length); 
+    }
     function getNextWordToken(src, index) {
       for (var i = index; i < src.length; ++i) {
         if (TOKENS.indexOf(src[i]) !== -1 && TOKENS_SPACE.indexOf(src[i]) === -1) {
@@ -45,7 +63,6 @@ function PCompiler (src) {
           else {
             word = 'var ';
           }
-
         }
         source += word + src[i];
         word = '';
@@ -54,6 +71,9 @@ function PCompiler (src) {
         word += src[i];
       }
     }
+
+  
     console.log(source);
+
     return source;
   }
