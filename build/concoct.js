@@ -96,9 +96,15 @@ function PGraphics(canvas) {
   };
 
   pg.arc = function(x,y,w,h,start,stop) {
-    console.log('arc', arguments);
+  
     ctx.beginPath();
-    ctx.ellipse(x,y,w/2,h/2, 0, start, stop);
+    if (Math.abs(start - stop) != Math.PI * 2) {
+      ctx.moveTo(x,y);
+      ctx.ellipse(x,y,w/2,h/2, 0, start, stop);
+      ctx.lineTo(x,y);
+    } else {
+      ctx.ellipse(x,y,w/2,h/2, 0, start, stop);
+    }
     if (CAN_STROKE) {
       ctx.stroke();
     }
@@ -350,17 +356,18 @@ function Concoct(canvas) {
 
 
   function map(value, start1, stop1, start2, stop2) {
+    console.log('map', arguments);
     var d1 = stop1 - start1;
     var d2 = stop2 - start2;
 
     var d = value - start1;
+    console.log((d1 / d) * d2);
 
-
-    return d2 * d1 / d;
+    return  d * (d2 / d1);
   }
 
   function radians(angle) {
-    return Math.PI / 180 * angle;
+    return angle * Math.PI / 180;
   }
 
   /**

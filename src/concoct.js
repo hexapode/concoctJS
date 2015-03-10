@@ -24,12 +24,11 @@ function Concoct(canvas) {
 
     var d = value - start1;
 
-
-    return d2 * d1 / d;
+    return  d * (d2 / d1);
   }
 
   function radians(angle) {
-    return Math.PI / 180 * angle;
+    return angle * Math.PI / 180;
   }
 
   /**
