@@ -47,6 +47,7 @@ function Concoct(canvas) {
   function __run() {
     window.requestAnimationFrame(__run);
     if (LOOP) {
+      FRAMECOUT++;
       mainPG._save();
       loopFn();
       mainPG._restore();
@@ -68,6 +69,11 @@ function Concoct(canvas) {
     x : 0,
     y : 0
   };
+
+  var FRAMECOUT = 0;
+  function frameCount() {
+    return FRAMECOUT;
+  }
 
   function mouseX() {
     return MOUSE.x;
@@ -97,7 +103,7 @@ function Concoct(canvas) {
   });
 
   // constants
-  source = 'var PI = Math.PI; var TWO_PI = Math.PI * 2;' + source;
+  source = 'var PI = Math.PI; var TWO_PI = Math.PI * 2;var CLOSE = 1;' + source;
 
 
   var fn = new Function(
@@ -122,6 +128,16 @@ function Concoct(canvas) {
     'triangle',
     'arc',
     'quad',
+    
+    'pushMatrix',
+    'popMatrix',
+
+    'beginShape',
+    'endShape',
+    'vertex',
+
+
+    'rotate',
 
     'map',
     'radians',
@@ -133,6 +149,9 @@ function Concoct(canvas) {
     'redraw',
     'mouseX',
     'mouseY',
+    'frameCount',
+    
+
     source += 'var setup; var draw; var mousePressed; if(setup) {setup()} if (mousePressed) {___SetMousePressed(mousePressed)} if (draw) {___SetLoop(draw)}');
 
   fn(
@@ -158,6 +177,16 @@ function Concoct(canvas) {
     mainPG.arc,
     mainPG.quad,
 
+
+    mainPG._save,
+    mainPG._restore,
+
+    mainPG.beginShape,
+    mainPG.endShape,
+    mainPG.vertex,
+
+    mainPG.rotate,
+
     map,
     radians,
 
@@ -167,6 +196,7 @@ function Concoct(canvas) {
     loop,
     redraw,
     mouseX,
-    mouseY
+    mouseY,
+    frameCount
   );
 }

@@ -49,6 +49,16 @@ function PCompiler (src) {
         if (word === 'mouseY') {
           word = 'mouseY()';
         }
+        if (word === 'frameCount') {
+          word = 'frameCount()';
+        }
+
+        if (word === 'cos') {
+          word = 'Math.cos';
+        }
+        if (word === 'sin') {
+          word = 'Math.sin';
+        }
 
         if (TYPES.indexOf(word) !== -1) {
           var next = getNextWordToken(src, i + 1);

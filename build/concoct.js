@@ -4,6 +4,7 @@
 
 function PGraphics(canvas) {
   var ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
 
   var CAN_FILL = true;
   var CAN_STROKE = true;
@@ -31,9 +32,11 @@ function PGraphics(canvas) {
       g = arguments[1];
       b = arguments[2];
     }
-
+ 
+    var c = ctx.fillStyle;
     ctx.fillStyle = 'rgb(' + r +',' + g + ',' + b + ')';
     ctx.fillRect(0,0, WIDTH, HEIGHT);
+    ctx.fillStyle = c;
   };
 
   pg.noFill = function () {
@@ -203,7 +206,7 @@ function PGraphics(canvas) {
     }
     var color = 'rgba(' + r +',' + g + ',' + b + ', ' + a + ')';
     ctx.fillStyle = color;
- 
+  console.log('fill', color);
   };
 
   pg.width = function() {
@@ -224,6 +227,10 @@ function PGraphics(canvas) {
     ctx.translate(x, y);
   };
 
+  pg.rotate = function(angle) {
+    ctx.rotate(angle);
+  };
+
   pg.createGraphics = function(w, h) {
     var canvas = document.createElement('canvas');
     canvas.width = w;
@@ -241,6 +248,38 @@ function PGraphics(canvas) {
     return canvas;
   };
 
+  var IN_SHAPE = false;
+  var IN_SHAPE_X = 0;
+  var IN_SHAPE_y = 0;
+  pg.beginShape = function() {
+    IN_SHAPE = true;
+    ctx.beginPath();
+  };
+
+  pg.endShape = function(shouldClose) {
+    if (shouldClose) {
+      ctx.lineTo(IN_SHAPE_X, IN_SHAPE_Y);
+    }
+    if (CAN_STROKE) {
+      ctx.stroke();
+    }
+    if (CAN_FILL) {
+      ctx.fill();
+    }
+  };
+
+  pg.vertex = function(x, y) {
+    if (IN_SHAPE) {
+      IN_SHAPE_X = x;
+      IN_SHAPE_Y = y;
+      IN_SHAPE = false;
+      ctx.moveTo(x,y);
+    }
+    else {
+      ctx.lineTo(x,y);
+    }
+  }
+
   pg.beginDraw = function() {
 
   };
@@ -251,6 +290,9 @@ function PGraphics(canvas) {
 
   pg._save = function() {
     ctx.save();
+    // set default colors
+    ctx.fillStyle = '#fff';
+    ctx.strokeStyle = '#000';
   };
 
   pg._restore = function() {
@@ -308,6 +350,16 @@ function PCompiler (src) {
         if (word === 'mouseY') {
           word = 'mouseY()';
         }
+        if (word === 'frameCount') {
+          word = 'frameCount()';
+        }
+
+        if (word === 'cos') {
+          word = 'Math.cos';
+        }
+        if (word === 'sin') {
+          word = 'Math.sin';
+        }
 
         if (TYPES.indexOf(word) !== -1) {
           var next = getNextWordToken(src, i + 1);
@@ -356,12 +408,10 @@ function Concoct(canvas) {
 
 
   function map(value, start1, stop1, start2, stop2) {
-    console.log('map', arguments);
     var d1 = stop1 - start1;
     var d2 = stop2 - start2;
 
     var d = value - start1;
-    console.log((d1 / d) * d2);
 
     return  d * (d2 / d1);
   }
@@ -386,6 +436,7 @@ function Concoct(canvas) {
   function __run() {
     window.requestAnimationFrame(__run);
     if (LOOP) {
+      FRAMECOUT++;
       mainPG._save();
       loopFn();
       mainPG._restore();
@@ -407,6 +458,11 @@ function Concoct(canvas) {
     x : 0,
     y : 0
   };
+
+  var FRAMECOUT = 0;
+  function frameCount() {
+    return FRAMECOUT;
+  }
 
   function mouseX() {
     return MOUSE.x;
@@ -436,7 +492,7 @@ function Concoct(canvas) {
   });
 
   // constants
-  source = 'var PI = Math.PI; var TWO_PI = Math.PI * 2;' + source;
+  source = 'var PI = Math.PI; var TWO_PI = Math.PI * 2;var CLOSE = 1;' + source;
 
 
   var fn = new Function(
@@ -461,6 +517,16 @@ function Concoct(canvas) {
     'triangle',
     'arc',
     'quad',
+    
+    'pushMatrix',
+    'popMatrix',
+
+    'beginShape',
+    'endShape',
+    'vertex',
+
+
+    'rotate',
 
     'map',
     'radians',
@@ -472,6 +538,9 @@ function Concoct(canvas) {
     'redraw',
     'mouseX',
     'mouseY',
+    'frameCount',
+    
+
     source += 'var setup; var draw; var mousePressed; if(setup) {setup()} if (mousePressed) {___SetMousePressed(mousePressed)} if (draw) {___SetLoop(draw)}');
 
   fn(
@@ -497,6 +566,16 @@ function Concoct(canvas) {
     mainPG.arc,
     mainPG.quad,
 
+
+    mainPG._save,
+    mainPG._restore,
+
+    mainPG.beginShape,
+    mainPG.endShape,
+    mainPG.vertex,
+
+    mainPG.rotate,
+
     map,
     radians,
 
@@ -506,7 +585,8 @@ function Concoct(canvas) {
     loop,
     redraw,
     mouseX,
-    mouseY
+    mouseY,
+    frameCount
   );
 };/*
   Main

@@ -4,6 +4,7 @@
 
 function PGraphics(canvas) {
   var ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
 
   var CAN_FILL = true;
   var CAN_STROKE = true;
@@ -31,9 +32,11 @@ function PGraphics(canvas) {
       g = arguments[1];
       b = arguments[2];
     }
-
+ 
+    var c = ctx.fillStyle;
     ctx.fillStyle = 'rgb(' + r +',' + g + ',' + b + ')';
     ctx.fillRect(0,0, WIDTH, HEIGHT);
+    ctx.fillStyle = c;
   };
 
   pg.noFill = function () {
@@ -203,7 +206,7 @@ function PGraphics(canvas) {
     }
     var color = 'rgba(' + r +',' + g + ',' + b + ', ' + a + ')';
     ctx.fillStyle = color;
- 
+  console.log('fill', color);
   };
 
   pg.width = function() {
@@ -224,6 +227,10 @@ function PGraphics(canvas) {
     ctx.translate(x, y);
   };
 
+  pg.rotate = function(angle) {
+    ctx.rotate(angle);
+  };
+
   pg.createGraphics = function(w, h) {
     var canvas = document.createElement('canvas');
     canvas.width = w;
@@ -241,6 +248,38 @@ function PGraphics(canvas) {
     return canvas;
   };
 
+  var IN_SHAPE = false;
+  var IN_SHAPE_X = 0;
+  var IN_SHAPE_y = 0;
+  pg.beginShape = function() {
+    IN_SHAPE = true;
+    ctx.beginPath();
+  };
+
+  pg.endShape = function(shouldClose) {
+    if (shouldClose) {
+      ctx.lineTo(IN_SHAPE_X, IN_SHAPE_Y);
+    }
+    if (CAN_STROKE) {
+      ctx.stroke();
+    }
+    if (CAN_FILL) {
+      ctx.fill();
+    }
+  };
+
+  pg.vertex = function(x, y) {
+    if (IN_SHAPE) {
+      IN_SHAPE_X = x;
+      IN_SHAPE_Y = y;
+      IN_SHAPE = false;
+      ctx.moveTo(x,y);
+    }
+    else {
+      ctx.lineTo(x,y);
+    }
+  }
+
   pg.beginDraw = function() {
 
   };
@@ -251,6 +290,9 @@ function PGraphics(canvas) {
 
   pg._save = function() {
     ctx.save();
+    // set default colors
+    ctx.fillStyle = '#fff';
+    ctx.strokeStyle = '#000';
   };
 
   pg._restore = function() {
