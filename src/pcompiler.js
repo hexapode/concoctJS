@@ -19,7 +19,7 @@ function PCompiler (src) {
     var TOKENS = [ ',' , ';', ' ', '\t', '+', '!', '(', ')', '#', '\\', '/', '-', '%', '^', '&', '*', '=', '[', ']', '\'', '\"', '{', '}'];
     var source = '';
     var word = '';
-    var TYPES = ['void', 'float', 'int', 'PGraphics'];
+    var TYPES = ['void', 'float', 'int', 'PGraphics', 'boolean', 'class'];
     var TOKENS_SPACE = [ ' ' , '\n', '\r', '\t'];
 
 
@@ -110,6 +110,9 @@ function PCompiler (src) {
           }
           else if (next === ')' || next === ',') {
             word = '';
+          }
+          else if (word === 'class') {
+             word = 'class ';
           }
           else {
             word = 'var ';
