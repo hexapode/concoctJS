@@ -11,19 +11,31 @@ function PGraphics(canvas) {
 
   var HEIGHT = canvas.height;
   var WIDTH = canvas.width;
+  
+  var IN_SHAPE = false;
+  var IN_SHAPE_X = 0;
+  var IN_SHAPE_y = 0;
 
   var pg = {};
-  pg.size = function (w, h) {
-   
-    canvas.width = w;
-    canvas.height = h;
-    canvas.style.width = w + 'px';
-    canvas.style.height = h + 'px';
-    WIDTH = w;
-    HEIGHT = h;
-  };
+;pg.arc = function(x,y,w,h,start,stop) {
 
-  pg.background = function (r) {
+  ctx.beginPath();
+  if (Math.abs(start - stop) != Math.PI * 2) {
+    ctx.moveTo(x,y);
+    ctx.ellipse(x,y,w/2,h/2, 0, start, stop);
+    ctx.lineTo(x,y);
+  } else {
+    ctx.ellipse(x,y,w/2,h/2, 0, start, stop);
+  }
+  if (CAN_STROKE) {
+    ctx.stroke();
+  }
+  if (CAN_FILL) {
+    ctx.fill();
+  }
+};;
+
+ pg.background = function (r) {
 
     var g = r;
     var b = r;
@@ -37,101 +49,20 @@ function PGraphics(canvas) {
     ctx.fillStyle = 'rgb(' + r +',' + g + ',' + b + ')';
     ctx.fillRect(0,0, WIDTH, HEIGHT);
     ctx.fillStyle = c;
-  };
+  };;
+  pg.beginDraw = function() {
 
-  pg.noFill = function () {
-   
-    CAN_FILL = false;
-  };
-
-  pg.noStroke = function () {
- 
-    CAN_STROKE = false;
-  };
-
-  pg.point = function (x, y) {
-  
-    if (CAN_FILL) {
-      ctx.fillRect(x, y, 1, 1);
-    }
-    if (CAN_STROKE) {
-      ctx.strokeRect(x, y, 1, 1);
-    }
-    
-
-  };
-
-  pg.line = function(x,y,x2,y2) {
-   
+  };;  pg.beginShape = function() {
+    IN_SHAPE = true;
     ctx.beginPath();
-    ctx.moveTo(x,y);
-    ctx.lineTo(x2, y2);
-    if (CAN_STROKE) {
-      ctx.stroke();
-    }
-    if (CAN_FILL) {
-      ctx.fill();
-    }
-  };
-
-  pg.rect = function(x,y,w,h) {
-   
-    if (CAN_STROKE) {
-      ctx.strokeRect(x,y,w,h);
-    }
-    if (CAN_FILL) {
-      ctx.fillRect(x,y,w,h);
-    }
-  };
-
-  pg.triangle = function (x1, y1, x2, y2, x3, y3) {
-    ctx.beginPath();
-    ctx.moveTo(x1,y1);
-    ctx.lineTo(x2,y2);
-    ctx.lineTo(x3,y3);
-    ctx.lineTo(x1,y1);
-    if (CAN_STROKE) {
-      ctx.stroke();
-    }
-    if (CAN_FILL) {
-      ctx.fill();
-    }
-  };
-
-  pg.arc = function(x,y,w,h,start,stop) {
-  
-    ctx.beginPath();
-    if (Math.abs(start - stop) != Math.PI * 2) {
-      ctx.moveTo(x,y);
-      ctx.ellipse(x,y,w/2,h/2, 0, start, stop);
-      ctx.lineTo(x,y);
-    } else {
-      ctx.ellipse(x,y,w/2,h/2, 0, start, stop);
-    }
-    if (CAN_STROKE) {
-      ctx.stroke();
-    }
-    if (CAN_FILL) {
-      ctx.fill();
-    }
-  };
-
-  pg.quad = function(x1, y1, x2, y2, x3, y3, x4, y4) {
-    ctx.beginPath();
-    ctx.moveTo(x1,y1);
-    ctx.lineTo(x2,y2);
-    ctx.lineTo(x3,y3);
-    ctx.lineTo(x4,y4);
-    ctx.lineTo(x1,y1);
-    if (CAN_STROKE) {
-      ctx.stroke();
-    }
-    if (CAN_FILL) {
-      ctx.fill();
-    }
-  };
-
-  pg.ellipse = function(x,y,w,h) {
+  };;  pg.createGraphics = function(w, h) {
+    var canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    //document.body.appendChild(canvas);
+    var pg = PGraphics(canvas);
+    return pg;
+  };;  pg.ellipse = function(x,y,w,h) {
 
     ctx.beginPath();
     ctx.ellipse(x,y,w/2,h/2, 0, 0, Math.PI * 2);
@@ -141,44 +72,21 @@ function PGraphics(canvas) {
     if (CAN_FILL) {
       ctx.fill();
     }
+  };;
+  pg.endDraw = function() {
+
   };
-
-  pg.stroke = function(r) {
-    CAN_STROKE = true;
-    r = r | 0;
-    
-    var g = r;
-    var b = r;
-    var a = 1.0;
-
-    if (r > 255) {
-      b = r & 0x0000ff;
-      g = r & 0x00ff00;
-      r = r & 0xff0000;
+;  pg.endShape = function(shouldClose) {
+    if (shouldClose) {
+      ctx.lineTo(IN_SHAPE_X, IN_SHAPE_Y);
     }
-
-    if (arguments.length == 2) {
-      a = 1/ 255 * arguments[1];
+    if (CAN_STROKE) {
+      ctx.stroke();
     }
-    if (arguments.length == 3) {
-      g = arguments[1] | 0;
-      b = arguments[2] | 0;
+    if (CAN_FILL) {
+      ctx.fill();
     }
-    if (arguments.length == 4) {
-      g = arguments[1] | 0;
-      b = arguments[2] | 0;
-      a = 1 / 255 * arguments[3];
-    }
-    var color = 'rgba(' + r +',' + g + ',' + b + ', ' + a + ')';
-
-    ctx.strokeStyle = color;
-  
-  };
- 
-
-
-
-  pg.fill = function(r) {
+  };;pg.fill = function(r) {
     CAN_FILL = true;
     r = r | 0;
     
@@ -206,69 +114,119 @@ function PGraphics(canvas) {
     }
     var color = 'rgba(' + r +',' + g + ',' + b + ', ' + a + ')';
     ctx.fillStyle = color;
-  console.log('fill', color);
-  };
-
-  pg.width = function() {
-     
-    return WIDTH;
-  };
-
-  pg.height = function() {
+  };;  pg.getCanvas = function() {
+    return canvas;
+  };;  pg.height = function() {
   
     return HEIGHT;
   };
-
-  pg.noSmooth = function() {
-    ctx.imageSmoothingEnabled = false;
-  };
-
-  pg.translate = function(x, y) {
-    ctx.translate(x, y);
-  };
-
-  pg.rotate = function(angle) {
-    ctx.rotate(angle);
-  };
-
-  pg.createGraphics = function(w, h) {
-    var canvas = document.createElement('canvas');
-    canvas.width = w;
-    canvas.height = h;
-    //document.body.appendChild(canvas);
-    var pg = PGraphics(canvas);
-    return pg;
-  };
-
-  pg.image= function(pg, x, y) {
+; pg.image= function(pg, x, y) {
     ctx.drawImage(pg.getCanvas(), x, y);
-  };
-
-  pg.getCanvas = function() {
-    return canvas;
-  };
-
-  var IN_SHAPE = false;
-  var IN_SHAPE_X = 0;
-  var IN_SHAPE_y = 0;
-  pg.beginShape = function() {
-    IN_SHAPE = true;
-    ctx.beginPath();
-  };
-
-  pg.endShape = function(shouldClose) {
-    if (shouldClose) {
-      ctx.lineTo(IN_SHAPE_X, IN_SHAPE_Y);
+  };;pg.line = function(x,y,x2,y2) {
+  ctx.beginPath();
+  ctx.moveTo(x,y);
+  ctx.lineTo(x2, y2);
+  if (CAN_STROKE) {
+    ctx.stroke();
+  }
+  if (CAN_FILL) {
+    ctx.fill();
+  }
+};;  pg.noFill = function () {
+   
+    CAN_FILL = false;
+  };; pg.noSmooth = function() {
+    ctx.imageSmoothingEnabled = false;
+  };;
+  pg.noStroke = function () {
+ 
+    CAN_STROKE = false;
+  };;  pg.point = function (x, y) {
+  
+    if (CAN_FILL) {
+      ctx.fillRect(x, y, 1, 1);
     }
+    if (CAN_STROKE) {
+      ctx.strokeRect(x, y, 1, 1);
+    }
+  };;pg.quad = function(x1, y1, x2, y2, x3, y3, x4, y4) {
+    ctx.beginPath();
+    ctx.moveTo(x1,y1);
+    ctx.lineTo(x2,y2);
+    ctx.lineTo(x3,y3);
+    ctx.lineTo(x4,y4);
+    ctx.lineTo(x1,y1);
     if (CAN_STROKE) {
       ctx.stroke();
     }
     if (CAN_FILL) {
       ctx.fill();
     }
-  };
+  };;  pg.rect = function(x,y,w,h) {
+   
+    if (CAN_STROKE) {
+      ctx.strokeRect(x,y,w,h);
+    }
+    if (CAN_FILL) {
+      ctx.fillRect(x,y,w,h);
+    }
+  };;
+  pg.rotate = function(angle) {
+    ctx.rotate(angle);
+  };;
 
-  pg.vertex = function(x, y) {
+pg.size = function (w, h) {
+  canvas.width = w;
+  canvas.height = h;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  WIDTH = w;
+  HEIGHT = h;
+};;pg.stroke = function(r) {
+  CAN_STROKE = true;
+  r = r | 0;
+  
+  var g = r;
+  var b = r;
+  var a = 1.0;
+
+  if (r > 255) {
+    b = r & 0x0000ff;
+    g = r & 0x00ff00;
+    r = r & 0xff0000;
+  }
+
+  if (arguments.length == 2) {
+    a = 1/ 255 * arguments[1];
+  }
+  if (arguments.length == 3) {
+    g = arguments[1] | 0;
+    b = arguments[2] | 0;
+  }
+  if (arguments.length == 4) {
+    g = arguments[1] | 0;
+    b = arguments[2] | 0;
+    a = 1 / 255 * arguments[3];
+  }
+  var color = 'rgba(' + r +',' + g + ',' + b + ', ' + a + ')';
+
+  ctx.strokeStyle = color;
+
+};;  pg.translate = function(x, y) {
+    ctx.translate(x, y);
+  };;pg.triangle = function (x1, y1, x2, y2, x3, y3) {
+  ctx.beginPath();
+  ctx.moveTo(x1,y1);
+  ctx.lineTo(x2,y2);
+  ctx.lineTo(x3,y3);
+  ctx.lineTo(x1,y1);
+  if (CAN_STROKE) {
+    ctx.stroke();
+  }
+  if (CAN_FILL) {
+    ctx.fill();
+  }
+};;  pg.vertex = function(x, y) {
     if (IN_SHAPE) {
       IN_SHAPE_X = x;
       IN_SHAPE_Y = y;
@@ -278,16 +236,10 @@ function PGraphics(canvas) {
     else {
       ctx.lineTo(x,y);
     }
-  }
-
-  pg.beginDraw = function() {
-
-  };
-
-  pg.endDraw = function() {
-
-  };
-
+  };  pg.width = function() {
+     
+    return WIDTH;
+  };;
   pg._save = function() {
     ctx.save();
     // set default colors
@@ -298,6 +250,8 @@ function PGraphics(canvas) {
   pg._restore = function() {
     ctx.restore();
   };
+
+  
   return pg;
 };
 
