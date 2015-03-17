@@ -4,17 +4,18 @@
 
 function PGraphics(canvas) {
   var ctx = canvas.getContext('2d');
+  // set default colors
   ctx.fillStyle = '#ffffff';
-
+  ctx.strokeStyle = '#000';
   var CAN_FILL = true;
   var CAN_STROKE = true;
 
   var HEIGHT = canvas.height;
   var WIDTH = canvas.width;
   
-  var IN_SHAPE = false;
-  var IN_SHAPE_X = 0;
-  var IN_SHAPE_y = 0;
+  var SHAPE_MODE = 0;
+  var SHAPE_VERTEX_COUNT = 0;
+  var CURRENT_SHAPE = [];
 
   var pg = {};
 ;pg.arc = function(x,y,w,h,start,stop) {
@@ -52,9 +53,22 @@ function PGraphics(canvas) {
   };;
   pg.beginDraw = function() {
 
-  };;  pg.beginShape = function() {
-    IN_SHAPE = true;
+  };;pg.beginShape = function(MODE) {
+  SHAPE_VERTEX_COUNT = 0;
+  SHAPE_MODE = MODE;
+  CURRENT_SHAPE = [];
+  ctx.beginPath();
+};;  pg.bezier = function(x1, y1, x2, y2, x3, y3, x4, y4) {
     ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.bezierCurveTo(x2,y2,x3,y3,x4,y4);
+
+    if (CAN_FILL) {
+      ctx.fill();
+    }
+    if (CAN_STROKE) {
+      ctx.stroke();
+    } 
   };;  pg.createGraphics = function(w, h) {
     var canvas = document.createElement('canvas');
     canvas.width = w;
@@ -76,17 +90,61 @@ function PGraphics(canvas) {
   pg.endDraw = function() {
 
   };
-;  pg.endShape = function(shouldClose) {
-    if (shouldClose) {
-      ctx.lineTo(IN_SHAPE_X, IN_SHAPE_Y);
+;
+pg.endShape = function(shouldClose) {
+  if (CURRENT_SHAPE.length == 0) {
+    return;
+  }
+  
+  // standart rendering mode LINES 2
+  if (!SHAPE_MODE || SHAPE_MODE === 2) {
+    
+    ctx.moveTo(CURRENT_SHAPE[0][0], CURRENT_SHAPE[0][1]);
+    for (var i = 1; i < CURRENT_SHAPE.length; ++i) {
+      ctx.lineTo(CURRENT_SHAPE[i][0], CURRENT_SHAPE[i][1]);
     }
+    if (shouldClose) {
+      ctx.lineTo(CURRENT_SHAPE[0][0], CURRENT_SHAPE[0][1]);
+    }
+
+   
     if (CAN_STROKE) {
       ctx.stroke();
     }
     if (CAN_FILL) {
       ctx.fill();
     }
-  };;pg.fill = function(r) {
+  }
+
+  // POINTS : 1
+  if (SHAPE_MODE === 1) {
+    
+    for (var i = 1; i < CURRENT_SHAPE.length; ++i) {
+      pg.point(CURRENT_SHAPE[0][0], CURRENT_SHAPE[0][1]);
+    }
+  
+  }
+
+  // TRIANGLES       : '3'
+  //TRIANGLE_FAN    : '4'
+  
+  // TRIANGLE_STRIP  : '5'
+  if (SHAPE_MODE === 5) {
+    for (var i = 0; i + 2 < CURRENT_SHAPE.length; i++) {
+      ctx.moveTo(CURRENT_SHAPE[i][0], CURRENT_SHAPE[i][1]);
+      ctx.lineTo(CURRENT_SHAPE[i + 1][0], CURRENT_SHAPE[i + 1][1]);
+      ctx.lineTo(CURRENT_SHAPE[i + 2][0], CURRENT_SHAPE[i + 2][1]);
+      ctx.lineTo(CURRENT_SHAPE[i][0], CURRENT_SHAPE[i][1]);
+    }
+    if (CAN_FILL) {
+      ctx.fill();
+    }
+    if (CAN_STROKE) {
+      ctx.stroke();
+    }
+
+  }
+};;pg.fill = function(r) {
     CAN_FILL = true;
     r = r | 0;
     
@@ -212,6 +270,25 @@ pg.size = function (w, h) {
 
   ctx.strokeStyle = color;
 
+};;/*
+  SQUARE          : '9',
+  ROUND           : '10',
+  PROJECT         : '11',
+*/
+
+pg.strokeCap = function(type) {
+
+  if (type === 9) {
+   ctx.lineCap = 'round';   
+  }
+  if (type === 10) {
+   ctx.lineCap = 'butt';   
+  }
+  if (type === 11) {
+   ctx.lineCap = 'square';   
+  }
+};;pg.strokeWeight = function(w) {
+  ctx.lineWidth = w;   
 };;  pg.translate = function(x, y) {
     ctx.translate(x, y);
   };;pg.triangle = function (x1, y1, x2, y2, x3, y3) {
@@ -227,15 +304,7 @@ pg.size = function (w, h) {
     ctx.fill();
   }
 };;  pg.vertex = function(x, y) {
-    if (IN_SHAPE) {
-      IN_SHAPE_X = x;
-      IN_SHAPE_Y = y;
-      IN_SHAPE = false;
-      ctx.moveTo(x,y);
-    }
-    else {
-      ctx.lineTo(x,y);
-    }
+    CURRENT_SHAPE.push([x, y]);
   };  pg.width = function() {
      
     return WIDTH;
@@ -243,8 +312,8 @@ pg.size = function (w, h) {
   pg._save = function() {
     ctx.save();
     // set default colors
-    ctx.fillStyle = '#fff';
-    ctx.strokeStyle = '#000';
+  //  ctx.fillStyle = '#fff';
+ //   ctx.strokeStyle = '#000';
   };
 
   pg._restore = function() {
@@ -254,6 +323,21 @@ pg.size = function (w, h) {
   
   return pg;
 };
+var enums = {
+  POINTS          : '1',
+  LINES           : '2',
+  TRIANGLES       : '3',
+  TRIANGLE_FAN    : '4',
+  TRIANGLE_STRIP  : '5',
+  QUADS           : '6',
+  QUAD_STRIP      : '7',
+  CLOSE           : '8',
+
+  SQUARE          : '9',
+  ROUND           : '10',
+  PROJECT         : '11',
+
+}
 
 function PCompiler (src) {
     var TOKENS = [ ',' , ';', ' ', '\t', '+', '!', '(', ')', '#', '\\', '/', '-', '%', '^', '&', '*', '=', '[', ']', '\'', '\"', '{', '}'];
@@ -278,6 +362,7 @@ function PCompiler (src) {
     function replaceAt(txt, index, character) {
       return txt.substr(0, index) + character + txt.substr(index+character.length); 
     }
+
     function getNextWordToken(src, index) {
       for (var i = index; i < src.length; ++i) {
         if (TOKENS.indexOf(src[i]) !== -1 && TOKENS_SPACE.indexOf(src[i]) === -1) {
@@ -285,6 +370,20 @@ function PCompiler (src) {
         }
       }
       return ' ';
+    }
+
+    function hasTokenBeforeNextWord(src, index) {
+      var hasWord = false;
+      for (var i = index; i < src.length; ++i) {
+
+        if (TOKENS.indexOf(src[i]) !== -1 && TOKENS_SPACE.indexOf(src[i]) === -1) {
+          return hasWord;
+        }
+        if (TOKENS_SPACE.indexOf(src[i]) === -1) {
+          hasWord = true;
+        }
+      }
+      return hasWord;
     }
 
     for (var i = 0; i < src.length; ++i) {
@@ -316,11 +415,22 @@ function PCompiler (src) {
         }
 
         if (TYPES.indexOf(word) !== -1) {
-          var next = getNextWordToken(src, i + 1);
+          var next = getNextWordToken(src, i);
         //  console.log(word, next);
 
-          if (next === '(') {
+          // detect function
+          if (next === '(' && hasTokenBeforeNextWord(src, i)) {
+
             word = 'function ';
+          }
+          // detect cast
+          else if (next === '(') {
+            if (word === 'int') {
+              word = '0|'
+            }
+            else {
+              word = '';
+            }
           }
           else if (next === ')' || next === ',') {
             word = '';
@@ -328,6 +438,10 @@ function PCompiler (src) {
           else {
             word = 'var ';
           }
+        }
+
+        if (enums[word]) {
+          word = enums[word];
         }
         source += word + src[i];
         word = '';
@@ -359,7 +473,10 @@ function Concoct(canvas) {
 
   source = PCompiler(source);
   
-
+  var FRAME_RATE = 0;
+  function frameRate(f) {
+    FRAME_RATE = f;
+  }
 
   function map(value, start1, stop1, start2, stop2) {
     var d1 = stop1 - start1;
@@ -367,7 +484,7 @@ function Concoct(canvas) {
 
     var d = value - start1;
 
-    return  d * (d2 / d1);
+    return start2 + d * (d2 / d1);
   }
 
   function radians(angle) {
@@ -388,7 +505,12 @@ function Concoct(canvas) {
 
   var loopFn = null;
   function __run() {
-    window.requestAnimationFrame(__run);
+    if (!FRAME_RATE) {
+      window.requestAnimationFrame(__run);
+    }
+    else {
+      setTimeout(__run, 1000 / FRAME_RATE);
+    }
     if (LOOP) {
       FRAMECOUT++;
       mainPG._save();
@@ -471,6 +593,7 @@ function Concoct(canvas) {
     'triangle',
     'arc',
     'quad',
+    'bezier',
     
     'pushMatrix',
     'popMatrix',
@@ -479,10 +602,14 @@ function Concoct(canvas) {
     'endShape',
     'vertex',
 
+    'strokeWeight',
+    'strokeCap',
+
 
     'rotate',
 
     'map',
+    'frameRate',
     'radians',
 
     '___SetLoop',
@@ -519,6 +646,7 @@ function Concoct(canvas) {
     mainPG.triangle,
     mainPG.arc,
     mainPG.quad,
+    mainPG.bezier,
 
 
     mainPG._save,
@@ -527,10 +655,14 @@ function Concoct(canvas) {
     mainPG.beginShape,
     mainPG.endShape,
     mainPG.vertex,
+    
+    mainPG.strokeWeight,
+    mainPG.strokeCap,
 
     mainPG.rotate,
 
     map,
+    frameRate,
     radians,
 
     ___SetLoop,

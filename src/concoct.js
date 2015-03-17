@@ -16,7 +16,10 @@ function Concoct(canvas) {
 
   source = PCompiler(source);
   
-
+  var FRAME_RATE = 0;
+  function frameRate(f) {
+    FRAME_RATE = f;
+  }
 
   function map(value, start1, stop1, start2, stop2) {
     var d1 = stop1 - start1;
@@ -24,7 +27,7 @@ function Concoct(canvas) {
 
     var d = value - start1;
 
-    return  d * (d2 / d1);
+    return start2 + d * (d2 / d1);
   }
 
   function radians(angle) {
@@ -45,7 +48,12 @@ function Concoct(canvas) {
 
   var loopFn = null;
   function __run() {
-    window.requestAnimationFrame(__run);
+    if (!FRAME_RATE) {
+      window.requestAnimationFrame(__run);
+    }
+    else {
+      setTimeout(__run, 1000 / FRAME_RATE);
+    }
     if (LOOP) {
       FRAMECOUT++;
       mainPG._save();
@@ -128,6 +136,7 @@ function Concoct(canvas) {
     'triangle',
     'arc',
     'quad',
+    'bezier',
     
     'pushMatrix',
     'popMatrix',
@@ -136,10 +145,14 @@ function Concoct(canvas) {
     'endShape',
     'vertex',
 
+    'strokeWeight',
+    'strokeCap',
+
 
     'rotate',
 
     'map',
+    'frameRate',
     'radians',
 
     '___SetLoop',
@@ -176,6 +189,7 @@ function Concoct(canvas) {
     mainPG.triangle,
     mainPG.arc,
     mainPG.quad,
+    mainPG.bezier,
 
 
     mainPG._save,
@@ -184,10 +198,14 @@ function Concoct(canvas) {
     mainPG.beginShape,
     mainPG.endShape,
     mainPG.vertex,
+    
+    mainPG.strokeWeight,
+    mainPG.strokeCap,
 
     mainPG.rotate,
 
     map,
+    frameRate,
     radians,
 
     ___SetLoop,

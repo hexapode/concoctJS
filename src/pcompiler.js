@@ -1,4 +1,19 @@
 
+var enums = {
+  POINTS          : '1',
+  LINES           : '2',
+  TRIANGLES       : '3',
+  TRIANGLE_FAN    : '4',
+  TRIANGLE_STRIP  : '5',
+  QUADS           : '6',
+  QUAD_STRIP      : '7',
+  CLOSE           : '8',
+
+  SQUARE          : '9',
+  ROUND           : '10',
+  PROJECT         : '11',
+
+}
 
 function PCompiler (src) {
     var TOKENS = [ ',' , ';', ' ', '\t', '+', '!', '(', ')', '#', '\\', '/', '-', '%', '^', '&', '*', '=', '[', ']', '\'', '\"', '{', '}'];
@@ -23,6 +38,7 @@ function PCompiler (src) {
     function replaceAt(txt, index, character) {
       return txt.substr(0, index) + character + txt.substr(index+character.length); 
     }
+
     function getNextWordToken(src, index) {
       for (var i = index; i < src.length; ++i) {
         if (TOKENS.indexOf(src[i]) !== -1 && TOKENS_SPACE.indexOf(src[i]) === -1) {
@@ -30,6 +46,20 @@ function PCompiler (src) {
         }
       }
       return ' ';
+    }
+
+    function hasTokenBeforeNextWord(src, index) {
+      var hasWord = false;
+      for (var i = index; i < src.length; ++i) {
+
+        if (TOKENS.indexOf(src[i]) !== -1 && TOKENS_SPACE.indexOf(src[i]) === -1) {
+          return hasWord;
+        }
+        if (TOKENS_SPACE.indexOf(src[i]) === -1) {
+          hasWord = true;
+        }
+      }
+      return hasWord;
     }
 
     for (var i = 0; i < src.length; ++i) {
@@ -61,11 +91,22 @@ function PCompiler (src) {
         }
 
         if (TYPES.indexOf(word) !== -1) {
-          var next = getNextWordToken(src, i + 1);
+          var next = getNextWordToken(src, i);
         //  console.log(word, next);
 
-          if (next === '(') {
+          // detect function
+          if (next === '(' && hasTokenBeforeNextWord(src, i)) {
+
             word = 'function ';
+          }
+          // detect cast
+          else if (next === '(') {
+            if (word === 'int') {
+              word = '0|'
+            }
+            else {
+              word = '';
+            }
           }
           else if (next === ')' || next === ',') {
             word = '';
@@ -73,6 +114,10 @@ function PCompiler (src) {
           else {
             word = 'var ';
           }
+        }
+
+        if (enums[word]) {
+          word = enums[word];
         }
         source += word + src[i];
         word = '';
